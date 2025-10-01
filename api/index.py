@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-import json
+import json, os
 from pathlib import Path
 import numpy as np
 
@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 # Load JSON data from file once at startup
-DATA_FILE = Path(__file__).parent / "data.json"
+DATA_FILE = os.path.join(os.path.dirname(__file__), "data.json")
 with open(DATA_FILE, "r") as f:
     records = json.load(f)
 
