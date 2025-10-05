@@ -20,6 +20,10 @@ class MetricsRequest(BaseModel):
     regions: list[str]
     threshold_ms: float
 
+@app.get("/")
+def read_root():
+    return {"message": "Hello, World!"}
+
 @app.post("/api/metrics")
 def get_metrics(req: MetricsRequest):
     data_path = Path(__file__).parent / "data.json"
