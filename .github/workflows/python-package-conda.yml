@@ -1,49 +1,41 @@
 name: FastAPI CI
 
+# Trigger workflow on push or pull request to main branch
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: 25ds2000003@ds.study.iitm.ac.in
-      - name: Checkout code
-        uses: actions/checkout@v3
+    # 1. Checkout the repo
+    - name: 25ds2000003@ds.study.iitm.ac.in
+      uses: actions/checkout@v3
 
-      # Step 2: Set up Python
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+    # 2. Set up Python
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
 
-      # Step 3: Cache pip dependencies
-      - name: prime-cache-cccf116
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: cache-cccf116
-          restore-keys: cache-cccf116
+    # 3. Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r api/requirements.txt
+        pip install numpy
 
-      # Step 4: Install dependencies
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r api/requirements.txt
+    # 4. Run tests (or simple sanity check)
+    - name: Run sanity check
+      run: |
+        python -c "from api.index import app; print('FastAPI app imported successfully')"
 
-      # Step 5: Run a basic check (optional)
-      - name: Test FastAPI imports
-        run: |
-          python -c "from fastapi import FastAPI; import uvicorn; print('FastAPI imports ok')"
-
-      # Optional Step 6: Curl the /metrics endpoint
-      # Uncomment if you want to run a request against your deployed app
-      # - name: Test /metrics endpoint
-      #   run: |
-      #     curl -X POST "https://vercel-fast-api-git-main-arvinds-projects-d94dbddc.vercel.app/metrics" \
-      #       -H "Content-Type: application/json" \
-      #       -d '{"regions":["apac","emea"], "threshold_ms":171}'
+    # 5. Optional: Linting
+    - name: Lint code
+      run: |
+        pip install flake8
+        flake8 api
