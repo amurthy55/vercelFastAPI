@@ -1,0 +1,30 @@
+name: Test FastAPI
+
+on:
+  workflow_dispatch:   # This allows manual triggering from GitHub
+  push:
+    branches:
+      - main         # optional, triggers on push to main
+
+jobs:
+  test-fastapi:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 25ds2000003@ds.study.iitm.ac.in
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests / commands
+        run: |
+          echo "FastAPI repo is ready"
+          # optionally, run `pytest` or any validation here
