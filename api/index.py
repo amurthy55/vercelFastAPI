@@ -1,17 +1,18 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from statistics import mean
-import json
 from pathlib import Path
-from fastapi.middleware.cors import CORSMiddleware
+import json
 
 app = FastAPI()
 
-# ✅ Allow POST requests from any origin
+# ✅ CORS setup — allow *everything*
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],   # include OPTIONS preflight
     allow_headers=["*"],
 )
 
@@ -25,7 +26,6 @@ class MetricsRequest(BaseModel):
 
 @app.post("/metrics")
 def get_metrics(req: MetricsRequest):
-    # Load data.json from the same folder
     data_path = Path(__file__).parent / "data.json"
     with open(data_path) as f:
         records = json.load(f)
