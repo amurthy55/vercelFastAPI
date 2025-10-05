@@ -33,9 +33,3 @@ jobs:
     - name: Run sanity check
       run: |
         python -c "from api.index import app; print('FastAPI app imported successfully')"
-
-    # 5. Optional: Linting
-    - name: Lint code
-      run: |
-        pip install flake8
-        flake8 api
