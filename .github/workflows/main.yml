@@ -1,31 +1,42 @@
-name: Test FastAPI
+name: CI
 
 on:
-  workflow_dispatch:   # This allows manual triggering from GitHub
   push:
     branches:
-      - main         # optional, triggers on push to main
+      - main
+  workflow_dispatch:
 
 jobs:
-  test-fastapi:
+  build:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout repo
       - name: 25ds2000003@ds.study.iitm.ac.in
         uses: actions/checkout@v3
 
+      # Setup Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
+      # ✅ Cache pip dependencies
+      - name: Cache pip
+        id: pip-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: cache-cccf116
+          restore-keys: |
+            cache-cccf116
+
+      # Install dependencies
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r api/requirements.txt
 
-
-      - name: Run tests / commands
-        run: |
-          echo "FastAPI repo is ready"
-          # optionally, run `pytest` or any validation here
+      # Prime cache step
+      - name: prime-cache-cccf116
+        run: echo "Cache hit: ${{ steps.pip-cache.outputs.cache-hit }}"
