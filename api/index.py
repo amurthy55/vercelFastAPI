@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from statistics import mean
-import json
 from pathlib import Path
+import json
 from mangum import Mangum
 
 app = FastAPI()
@@ -12,7 +12,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["POST"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -22,9 +22,9 @@ class MetricsRequest(BaseModel):
 
 @app.get("/")
 def read_root():
-    return {"message": "Hello, World!"}
+    return {"message": "FastAPI is running!"}
 
-@app.post("/api/metrics")
+@app.post("/metrics")
 def get_metrics(req: MetricsRequest):
     data_path = Path(__file__).parent / "data.json"
     with open(data_path) as f:
