@@ -1,0 +1,42 @@
+name: FastAPI CI
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # ✅ Corrected cache step
+      - name: prime-cache-cccf116
+        id: cache-step
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: cache-cccf116
+          restore-keys: cache-cccf116
+
+      - name: Show cache result
+        run: |
+          echo "Cache hit: ${{ steps.cache-step.outputs.cache-hit }}"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r api/requirements.txt
+
+      - name: Test FastAPI imports
+        run: |
+          python -c "from fastapi import FastAPI; import uvicorn; print('FastAPI imports ok')"
