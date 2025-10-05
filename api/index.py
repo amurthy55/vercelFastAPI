@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from statistics import mean
@@ -7,14 +8,23 @@ import json
 
 app = FastAPI()
 
-# ✅ CORS setup — allow *everything*
+# ✅ CORS setup — allow everything
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],   # include OPTIONS preflight
+    allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.options("/{rest_of_path:path}")
+def preflight_handler(rest_of_path: str):
+    """Handle browser preflight requests explicitly (important for Vercel)."""
+    response = JSONResponse(content={"message": "CORS preflight OK"})
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
 
 @app.get("/")
 def read_root():
@@ -46,4 +56,7 @@ def get_metrics(req: MetricsRequest):
             "breaches": breaches,
         }
 
-    return result
+    # ✅ Explicitly add CORS header to actual POST response
+    response = JSONResponse(content=result)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
