@@ -1,15 +1,16 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from pathlib import Path
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from statistics import mean
-from pathlib import Path
 import json
-import numpy as np
+import numpy as np  # For proper percentile calculation
 
 app = FastAPI()
+
+# ✅ Keep your working CORS setup
 origins = ["*"]
-# ✅ CORS setup — allow everything
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -32,6 +33,7 @@ def preflight_handler(rest_of_path: str):
 def read_root():
     return {"message": "Hello, World!"}
 
+# ------------------- Metrics POST endpoint -------------------
 class MetricsRequest(BaseModel):
     regions: list[str]
     threshold_ms: float
@@ -52,13 +54,17 @@ def get_metrics(req: MetricsRequest):
         uptimes = [r["uptime_pct"] for r in region_data]
         breaches = sum(1 for l in latencies if l > req.threshold_ms)
 
+        # Proper 95th percentile calculation
         p95 = float(np.percentile(latencies, 95))
 
         result[region] = {
             "avg_latency": round(mean(latencies), 3),
-            "p95_latency": round(p95, 2),  # round to 2 decimals as exam expects
+            "p95_latency": round(p95, 2),  # round to 2 decimals
             "avg_uptime": round(mean(uptimes), 3),
             "breaches": breaches,
         }
 
-    return {"regions": result}
+    # Return under "regions" key as required by the portal
+    response = JSONResponse(content={"regions": result})
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
