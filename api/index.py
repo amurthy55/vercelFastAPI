@@ -15,7 +15,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    Access-Control-Allow-Origin=["*"],
 )
 
 @app.options("/{rest_of_path:path}")
