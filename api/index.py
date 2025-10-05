@@ -1,53 +1,47 @@
-# api/index.py
-import os
-import json
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from statistics import mean
+import json
+from pathlib import Path
 from mangum import Mangum
-import statistics
 
 app = FastAPI()
 
+# Enable CORS for any origin
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["*"],
+    allow_methods=["POST"],
     allow_headers=["*"],
 )
 
-# Load data.json
-DATA_FILE = os.path.join(os.path.dirname(__file__), "data.json")
-with open(DATA_FILE, "r") as f:
-    records = json.load(f)
+class MetricsRequest(BaseModel):
+    regions: list[str]
+    threshold_ms: float
 
-@app.post("/metrics")
-async def metrics(request: Request):
-    body = await request.json()
-    regions = body.get("regions", [])
-    threshold = body.get("threshold_ms", 0)
+@app.post("/api/metrics")
+def get_metrics(req: MetricsRequest):
+    data_path = Path(__file__).parent / "data.json"
+    with open(data_path) as f:
+        records = json.load(f)
 
-    response = {}
-    for region in regions:
+    result = {}
+    for region in req.regions:
         region_data = [r for r in records if r["region"] == region]
         if not region_data:
             continue
-
         latencies = [r["latency_ms"] for r in region_data]
         uptimes = [r["uptime_pct"] for r in region_data]
-
-        avg_latency = statistics.mean(latencies)
-        p95_latency = sorted(latencies)[int(0.95 * len(latencies)) - 1]
-        avg_uptime = statistics.mean(uptimes)
-        breaches = sum(1 for l in latencies if l > threshold)
-
-        response[region] = {
-            "avg_latency": avg_latency,
-            "p95_latency": p95_latency,
-            "avg_uptime": avg_uptime,
+        breaches = sum(1 for l in latencies if l > req.threshold_ms)
+        p95 = sorted(latencies)[int(0.95 * len(latencies)) - 1]
+        result[region] = {
+            "avg_latency": round(mean(latencies), 3),
+            "p95_latency": round(p95, 3),
+            "avg_uptime": round(mean(uptimes), 3),
             "breaches": breaches,
         }
 
-    return response
+    return result
 
-# 👇 This exposes FastAPI to Vercel
 handler = Mangum(app)
