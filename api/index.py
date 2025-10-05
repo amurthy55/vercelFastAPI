@@ -57,7 +57,6 @@ def get_metrics(req: MetricsRequest):
             "breaches": breaches,
         }
 
-    # ✅ Explicitly add CORS header to actual POST response
-    response = JSONResponse(content=result)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    return {"regions":response}
+    # ✅ Return plain dict under "regions" key
+    return {"regions": result}
+
