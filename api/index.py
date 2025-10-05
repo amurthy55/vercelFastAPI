@@ -3,6 +3,17 @@ from pydantic import BaseModel
 from statistics import mean
 import json
 from pathlib import Path
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# ✅ Allow POST requests from any origin
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["POST"],
+    allow_headers=["*"],
+)
 
 app = FastAPI()
 
