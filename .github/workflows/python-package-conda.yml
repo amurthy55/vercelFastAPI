@@ -1,34 +1,49 @@
-name: Python Package using Conda
+name: FastAPI CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-  build-linux:
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 5
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.10'
-    - name: Add conda to system path
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-    - name: 25ds2000003@ds.study.iitm.ac.in
-      run: |
-        conda env update --file environment.yml --name base
-    - name: Lint with flake8
-      run: |
-        conda install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        conda install pytest
-        pytest
+      # Step 1: 25ds2000003@ds.study.iitm.ac.in
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # Step 3: Cache pip dependencies
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: cache-cccf116
+          restore-keys: cache-cccf116
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r api/requirements.txt
+
+      # Step 5: Run a basic check (optional)
+      - name: Test FastAPI imports
+        run: |
+          python -c "from fastapi import FastAPI; import uvicorn; print('FastAPI imports ok')"
+
+      # Optional Step 6: Curl the /metrics endpoint
+      # Uncomment if you want to run a request against your deployed app
+      # - name: Test /metrics endpoint
+      #   run: |
+      #     curl -X POST "https://vercel-fast-api-git-main-arvinds-projects-d94dbddc.vercel.app/metrics" \
+      #       -H "Content-Type: application/json" \
+      #       -d '{"regions":["apac","emea"], "threshold_ms":171}'
