@@ -11,17 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repo
-      - name: 25ds2000003@ds.study.iitm.ac.in
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Setup Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      # ✅ Cache pip dependencies
+      # Cache pip
       - name: Cache pip
         id: pip-cache
         uses: actions/cache@v4
